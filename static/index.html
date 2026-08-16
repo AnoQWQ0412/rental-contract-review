@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>租赁合同审查</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f5f6f8;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 16px;
+  }
+  .app {
+    width: 100%;
+    max-width: 520px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    padding: 20px;
+  }
+  h1 { font-size: 20px; color: #1a1a1a; margin-bottom: 6px; }
+  .sub { font-size: 13px; color: #888; margin-bottom: 16px; }
+  .keybar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 8px 12px;
+    margin-bottom: 14px;
+    font-size: 12px;
+    color: #555;
+  }
+  .keybar .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .keybar .dot.on { background: #22a65c; }
+  .keybar .dot.off { background: #d99000; }
+  .keybar button {
+    width: auto;
+    margin: 0;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 8px;
+    background: #4a7dff;
+  }
+  .keymodal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .keymodal.visible { display: flex; }
+  .keymodal .box {
+    background: #fff;
+    border-radius: 14px;
+    padding: 20px;
+    width: 100%;
+    max-width: 400px;
+  }
+  .keymodal h3 { font-size: 16px; margin-bottom: 8px; }
+  .keymodal p { font-size: 12px; color: #888; margin-bottom: 12px; line-height: 1.6; }
+  .keymodal input {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+  .keymodal .row { display: flex; gap: 8px; margin-top: 12px; }
+  .keymodal .row button { flex: 1; margin: 0; font-size: 14px; }
+  .keymodal .row .cancel { background: #ccc; }
+  textarea {
+    width: 100%;
+    height: 180px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 14px;
+    line-height: 1.6;
+    resize: vertical;
+    font-family: inherit;
+  }
+  textarea:focus { outline: none; border-color: #4a7dff; }
+  button {
+    width: 100%;
+    margin-top: 12px;
+    padding: 13px;
+    border: none;
+    border-radius: 10px;
+    background: #4a7dff;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  button:hover { background: #3a6be6; }
+  button:disabled { background: #b9c6e8; cursor: not-allowed; }
+  .status { font-size: 13px; color: #666; margin-top: 12px; min-height: 20px; }
+  .result {
+    margin-top: 16px;
+    border-top: 1px solid #eee;
+    padding-top: 16px;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .result h2 { font-size: 16px; color: #1a1a1a; margin-bottom: 12px; }
+  .meta {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+  .badge.type { background: #eef3ff; color: #3a6be6; }
+  .badge.pass { background: #e8f7ee; color: #22a65c; }
+  .badge.pass-fail { background: #fdeaea; color: #d64545; }
+  .badge.pass-review { background: #fff5e0; color: #d99000; }
+  .risk {
+    background: #fafafa;
+    border-left: 3px solid #ccc;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+  }
+  .risk.high { border-left-color: #d64545; }
+  .risk.mid { border-left-color: #d99000; }
+  .risk.low { border-left-color: #4a7dff; }
+  .risk .risk-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .risk .item { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+  .risk .lvl { font-size: 11px; padding: 2px 8px; border-radius: 12px; }
+  .risk .lvl.high { background: #fdeaea; color: #d64545; }
+  .risk .lvl.mid { background: #fff5e0; color: #d99000; }
+  .risk .lvl.low { background: #eef3ff; color: #3a6be6; }
+  .risk .lvl.review { background: #eee; color: #666; }
+  .risk .detail { font-size: 13px; color: #444; line-height: 1.5; margin-bottom: 4px; }
+  .risk .basis { font-size: 12px; color: #999; }
+  .summary { font-size: 13px; color: #333; line-height: 1.6; background: #f8f9fa; border-radius: 8px; padding: 10px 12px; }
+  .empty { font-size: 13px; color: #888; text-align: center; padding: 12px; }
+  .error { font-size: 13px; color: #d64545; background: #fdeaea; border-radius: 8px; padding: 12px; margin-top: 16px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>📋 租赁合同审查</h1>
+  <div class="sub">粘贴合同全文，自动识别类型并出具风险报告</div>
+
+  <div class="keybar">
+    <span class="dot" id="keydot"></span>
+    <span id="keytext">检查 API Key...</span>
+    <button onclick="openKeyModal()">设置</button>
+  </div>
+
+  <textarea id="contract" placeholder="在此粘贴租赁合同全文…&#10;&#10;支持：住宅 / 商铺 / 办公 / 设备 / 车辆等各类租赁"></textarea>
+  <button id="btn" onclick="review()">开始审查</button>
+  <div class="status" id="status"></div>
+
+  <div class="result" id="result"></div>
+</div>
+
+<!-- API Key 设置弹窗 -->
+<div class="keymodal" id="keymodal">
+  <div class="box">
+    <h3>🔑 设置 DeepSeek API Key</h3>
+    <p>key 只保存在你自己的电脑上（.agent_key 文件），用于调用 DeepSeek 接口。填一次即可，以后不用再填。</p>
+    <input id="keyinput" type="password" placeholder="sk-...">
+    <div class="row">
+      <button onclick="saveKey()">保存</button>
+      <button class="cancel" onclick="closeKeyModal()">取消</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const LEVEL_LABEL = {"高": "高风险", "中": "中风险", "低": "低风险", "待复核": "待复核"};
+
+// ── API Key 状态 ─────────────────────────────
+async function checkKey() {
+  try {
+    const r = await fetch("/api/has_key");
+    const d = await r.json();
+    const on = !!d.has_key;
+    document.getElementById("keydot").className = "dot " + (on ? "on" : "off");
+    document.getElementById("keytext").textContent = on ? "API Key 已配置" : "需要设置 API Key";
+    return on;
+  } catch (e) {
+    document.getElementById("keydot").className = "dot off";
+    document.getElementById("keytext").textContent = "服务未连接";
+    return false;
+  }
+}
+
+function openKeyModal() {
+  document.getElementById("keymodal").classList.add("visible");
+  document.getElementById("keyinput").focus();
+}
+function closeKeyModal() {
+  document.getElementById("keymodal").classList.remove("visible");
+}
+async function saveKey() {
+  const key = document.getElementById("keyinput").value.trim();
+  if (!key) { alert("请输入 API Key"); return; }
+  const r = await fetch("/api/set_key", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({api_key: key}),
+  });
+  const d = await r.json();
+  if (d.ok) {
+    closeKeyModal();
+    document.getElementById("keyinput").value = "";
+    checkKey();
+    alert("已保存，可以直接开始审查了");
+  } else {
+    alert("保存失败：" + (d.error || "未知错误"));
+  }
+}
+
+async function review() {
+  const text = document.getElementById("contract").value.trim();
+  const btn = document.getElementById("btn");
+  const status = document.getElementById("status");
+  const result = document.getElementById("result");
+
+  if (!text) { status.textContent = "请先粘贴合同内容"; return; }
+
+  const hasKey = await checkKey();
+  if (!hasKey) {
+    status.textContent = "";
+    result.innerHTML = `<div class="error">尚未配置 API Key，请先点击右上角「设置」填入你的 DeepSeek API Key。</div>`;
+    result.classList.add("visible");
+    return;
+  }
+
+  btn.disabled = true;
+  status.textContent = "⏳ 审查中，请稍候（通常需要 10~60 秒）...";
+  result.classList.remove("visible");
+
+  try {
+    const resp = await fetch("/api/review", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({text})
+    });
+    const data = await resp.json();
+
+    if (!data.ok) {
+      status.textContent = "";
+      result.innerHTML = `<div class="error">${data.error || "输入无法识别"}</div>`;
+      result.classList.add("visible");
+      return;
+    }
+
+    status.textContent = `✅ 完成，耗时 ${data.elapsed} 秒`;
+    renderResult(data.result);
+  } catch (e) {
+    status.textContent = "";
+    result.innerHTML = `<div class="error">网络错误：${e.message}</div>`;
+    result.classList.add("visible");
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function renderResult(r) {
+  const el = document.getElementById("result");
+  const passClass = r.pass === "是" ? "pass" : (r.pass === "否" ? "pass-fail" : "pass-review");
+
+  let risks = "";
+  if (!r.risks || r.risks.length === 0) {
+    risks = `<div class="empty">未发现明显风险点</div>`;
+  } else {
+    risks = r.risks.map(risk => {
+      const lv = risk.level === "待复核" ? "review" : risk.level;
+      const lvlClass = risk.level === "待复核" ? "review" : (risk.level === "低" ? "low" : (risk.level === "中" ? "mid" : "high"));
+      return `
+        <div class="risk ${lvlClass}">
+          <div class="risk-head">
+            <span class="item">${risk.item}</span>
+            <span class="lvl ${lv}">${LEVEL_LABEL[risk.level] || risk.level}</span>
+          </div>
+          <div class="detail">${risk.detail}</div>
+          <div class="basis">依据：${risk.basis}</div>
+        </div>`;
+    }).join("");
+  }
+
+  el.innerHTML = `
+    <h2>审查结果</h2>
+    <div class="meta">
+      <span class="badge type">${r.document_type || "其他"}</span>
+      <span class="badge ${passClass}">审查结论：${r.pass}</span>
+    </div>
+    ${risks}
+    <h2 style="font-size:14px;margin:14px 0 8px">总体评价</h2>
+    <div class="summary">${r.summary || ""}</div>`;
+  el.classList.add("visible");
+}
+
+// 页面加载时检查 key 状态
+checkKey();
+</script>
+</body>
+</html>

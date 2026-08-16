@@ -1,0 +1,10 @@
+# 密钥文件
+.env
+.agent_key
+
+# Python 缓存
+__pycache__/
+*.pyc
+
+# 运行日志（每次审查的留档，不要提交到 git）
+logs/
