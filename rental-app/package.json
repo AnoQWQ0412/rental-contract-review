@@ -1,0 +1,15 @@
+{
+  "name": "rental-app",
+  "version": "1.0.0",
+  "description": "租赁合同审查 - 纯客户端 Android 应用",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/android": "^6.0.0"
+  },
+  "devDependencies": {}
+}

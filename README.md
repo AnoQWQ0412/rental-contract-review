@@ -130,49 +130,67 @@ DeepSeek 的上下文缓存是自动的，无需像 Claude 那样手动标记。
 
 ---
 
-## 打包成 APK（移动端软件）
+---
 
-### API key 怎么处理（重要）
+## 纯客户端版（推荐，已测通 CORS）
 
-key 是**你自己在软件里填的**（网页版或命令行首次运行时填一次，存到本机 `.agent_key`）。
-对于个人使用，这个方案最简单。
+> **DeepSeek API 允许浏览器/手机直接调用**（CORS 已放行）。所以完全可以做**纯客户端**应用：
+> **key 只存在用户手机本地，不走任何服务器**。零部署成本、无 key 泄露风险。
 
-如果要发布给别人用，别让他们的 key 存到你服务器——改为**用户填自己的 key**（就像各家 AI 客户端的做法）。打包成 APK 后同样在设置里填 key。
+### 已在 webapp/ 验证的纯客户端版
 
-### 方案一（最简单，推荐先做）：手机浏览器直接访问
+`webapp/` 是一个**自包含的纯前端应用**，对应 Python 版全部逻辑的 JS 实现：
 
-后端跑在你电脑上，手机同一 WiFi 访问网页即可，无需打包：
+| Python 版 | webapp/ JS 版 |
+|---|---|
+| `agent.py` | `agent.js`（agentic loop 直接 fetch DeepSeek） |
+| `tools.py` | `tools.js`（工具 + 内嵌技能规则） |
+| `validator.py` | `validator.js`（规则层输入校验） |
+| `config.py` | `config.js`（key 存 localStorage） |
+| `static/index.html` | `index.html`（主界面，key 设置/审查/结果） |
+
+**验证方法**（本地测，不需要服务器逻辑）：
 ```
-python server.py
-手机浏览器打开 http://<电脑局域网IP>:8000
+cd webapp
+python -m http.server 8080
+# 浏览器打开 http://127.0.0.1:8080
 ```
+填 key（存 localStorage）、粘贴合同、审查，全流程在浏览器里跑，数据直连 DeepSeek。
 
-### 方案二：用 Capacitor 打包成 APK（需要 Android Studio）
+### 打包成 APK（用 Capacitor 包装 webapp/）
 
-Capacitor 能把网页包成本地 APK，界面直接调用后端地址：
-
-1. 安装 Node.js，创建壳工程：
+1. 安装 Node.js（nodejs.org）
+2. 创建 Capacitor 工程并加入 Android 平台：
    ```
    npx @capacitor/cli create rental-app
    cd rental-app
    npm install @capacitor/core @capacitor/android
    npx cap add android
    ```
-2. 把 `static/` 里的内容拷到 `rental-app/www/`
-3. 把网页里的 `fetch("/api/review", ...)` 改成后端完整地址：
-   `fetch("http://<你的服务器地址>:8000/api/review", ...)`
-4. 生成 APK：
+3. 把 `webapp/` 里的 5 个文件拷到 `rental-app/www/`（替换默认内容）
+4. 构建并打开 Android Studio：
    ```
-   npx cap open android      # 用 Android Studio 打开
+   npx cap sync android
+   npx cap open android
    ```
-   Android Studio → Build → Build Bundle(s)/APK(s) → Build APK(s)
-   产物在 `app/build/outputs/apk/debug/app-debug.apk`
+5. Android Studio → Build → Build Bundle(s)/APK(s) → Build APK(s)
+   产物在 `rental-app/android/app/build/outputs/apk/debug/app-debug.apk`
 
-> 注意：手机访问 `http://192.168.x.x:8000` 属于明文 HTTP。同 WiFi 调试可行；
-> 如果要给外部用户用，需要一台公网服务器 + HTTPS（或用内网穿透工具）。
+### 打包后的行为
 
-### 更进一步的架构（上线再说）
+- **key 在用户手机上**：首次打开点「设置」填 key，存手机本地（localStorage），换手机需重填
+- **数据直连 DeepSeek**：审查时 APK 直接调 `api.deepseek.com`，不经过任何第三方服务器
+- **明文 HTTPS**：DeepSeek API 是 HTTPS，数据加密传输，安全
+- **APK 本身不含 key**：用户自己的 key 只在各自手机上，你无法收集也不泄露
 
-- 后端加简单鉴权（token 校验），避免被随意调用消耗你的 key
-- 后端部署到云服务器，APK 直连云端
-- 审查结果落库，方便统计和管理
+### 注意事项
+
+- **需要手机能连上 DeepSeek API**（国内通常可直接连 api.deepseek.com）
+- 免费分发：直接给 APK 文件 / 上传到应用市场均可
+- 想限制用户量/做订阅：未来可加一个"规则验证"逻辑，但核心审查仍是纯本地
+
+### 个人使用 vs 发布
+
+- **纯客户端版**（推荐）：key 在用户手机本地，零服务器。适合自己用、免费分发。
+- **个人局域网用**：也可以用 `server.py` + 手机浏览器访问 `http://<电脑IP>:8000`（见快速开始），适合不想打包的场景。
+- **以后想收集数据/做订阅**：再引入后端，此时核心审查逻辑可复用 Python 版。

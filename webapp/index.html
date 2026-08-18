@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>租赁合同审查</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f5f6f8;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 16px;
+  }
+  .app {
+    width: 100%;
+    max-width: 520px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    padding: 20px;
+  }
+  h1 { font-size: 20px; color: #1a1a1a; margin-bottom: 6px; }
+  .sub { font-size: 13px; color: #888; margin-bottom: 16px; }
+  .keybar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 8px 12px;
+    margin-bottom: 14px;
+    font-size: 12px;
+    color: #555;
+  }
+  .keybar .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .keybar .dot.on { background: #22a65c; }
+  .keybar .dot.off { background: #d99000; }
+  .keybar button {
+    width: auto;
+    margin: 0;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 8px;
+    background: #4a7dff;
+  }
+  .keymodal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .keymodal.visible { display: flex; }
+  .keymodal .box {
+    background: #fff;
+    border-radius: 14px;
+    padding: 20px;
+    width: 100%;
+    max-width: 400px;
+  }
+  .keymodal h3 { font-size: 16px; margin-bottom: 8px; }
+  .keymodal p { font-size: 12px; color: #888; margin-bottom: 12px; line-height: 1.6; }
+  .keymodal input {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+  .keymodal .row { display: flex; gap: 8px; margin-top: 12px; }
+  .keymodal .row button { flex: 1; margin: 0; font-size: 14px; }
+  .keymodal .row .cancel { background: #ccc; }
+  .keymodal select {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    background: #fff;
+    margin-bottom: 10px;
+  }
+  .keymodal label { display: block; font-size: 12px; color: #888; margin: 10px 0 4px; }
+  .keymodal .custom-only { display: none; }
+  textarea {
+    width: 100%;
+    height: 180px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 14px;
+    line-height: 1.6;
+    resize: vertical;
+    font-family: inherit;
+  }
+  textarea:focus { outline: none; border-color: #4a7dff; }
+  button {
+    width: 100%;
+    margin-top: 12px;
+    padding: 13px;
+    border: none;
+    border-radius: 10px;
+    background: #4a7dff;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  button:hover { background: #3a6be6; }
+  button:disabled { background: #b9c6e8; cursor: not-allowed; }
+  .status { font-size: 13px; color: #666; margin-top: 12px; min-height: 20px; }
+  .log { font-size: 12px; color: #999; margin-top: 8px; white-space: pre-wrap; font-family: monospace; }
+  .result {
+    margin-top: 16px;
+    border-top: 1px solid #eee;
+    padding-top: 16px;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .result h2 { font-size: 16px; color: #1a1a1a; margin-bottom: 12px; }
+  .meta { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .badge { font-size: 12px; padding: 4px 10px; border-radius: 20px; font-weight: 600; }
+  .badge.type { background: #eef3ff; color: #3a6be6; }
+  .badge.pass { background: #e8f7ee; color: #22a65c; }
+  .badge.pass-fail { background: #fdeaea; color: #d64545; }
+  .badge.pass-review { background: #fff5e0; color: #d99000; }
+  .risk {
+    background: #fafafa;
+    border-left: 3px solid #ccc;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+  }
+  .risk.high { border-left-color: #d64545; }
+  .risk.mid { border-left-color: #d99000; }
+  .risk.low { border-left-color: #4a7dff; }
+  .risk .risk-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .risk .item { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+  .risk .lvl { font-size: 11px; padding: 2px 8px; border-radius: 12px; }
+  .risk .lvl.high { background: #fdeaea; color: #d64545; }
+  .risk .lvl.mid { background: #fff5e0; color: #d99000; }
+  .risk .lvl.low { background: #eef3ff; color: #3a6be6; }
+  .risk .lvl.review { background: #eee; color: #666; }
+  .risk .detail { font-size: 13px; color: #444; line-height: 1.5; margin-bottom: 4px; }
+  .risk .basis { font-size: 12px; color: #999; }
+  .summary { font-size: 13px; color: #333; line-height: 1.6; background: #f8f9fa; border-radius: 8px; padding: 10px 12px; }
+  .empty { font-size: 13px; color: #888; text-align: center; padding: 12px; }
+  .error { font-size: 13px; color: #d64545; background: #fdeaea; border-radius: 8px; padding: 12px; margin-top: 16px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>📋 租赁合同审查</h1>
+  <div class="sub">纯客户端运行 · 你的 API Key 只存在本机，不上传任何服务器</div>
+
+  <div class="keybar">
+    <span class="dot" id="keydot"></span>
+    <span id="keytext">检查 API Key...</span>
+    <button onclick="openKeyModal()">设置</button>
+  </div>
+
+  <textarea id="contract" placeholder="在此粘贴租赁合同全文…&#10;&#10;支持：住宅 / 商铺 / 办公 / 设备 / 车辆等各类租赁"></textarea>
+  <button id="btn" onclick="review()">开始审查</button>
+  <div class="status" id="status"></div>
+  <div class="log" id="log"></div>
+
+  <div class="result" id="result"></div>
+</div>
+
+<!-- 设置弹窗：选厂商 + 填 key + 选模型 -->
+<div class="keymodal" id="keymodal">
+  <div class="box">
+    <h3>⚙️ 服务设置</h3>
+    <p>选择模型厂商，填入你的 API Key。key 只保存在本机，不会上传任何服务器。填一次即可，换设备需重新填写。</p>
+
+    <label>模型厂商</label>
+    <select id="providerSelect" onchange="onProviderChange()"></select>
+
+    <label>API Key</label>
+    <input id="keyinput" type="password" placeholder="sk-...">
+
+    <div class="custom-only" id="customFields">
+      <label>自定义 API 地址（base_url）</label>
+      <input id="customBase" type="text" placeholder="https://api.example.com/v1">
+      <label>模型名</label>
+      <input id="customModel" type="text" placeholder="model-name">
+    </div>
+
+    <label>模型</label>
+    <select id="modelSelect"></select>
+
+    <div class="row">
+      <button onclick="saveKey()">保存</button>
+      <button class="cancel" onclick="closeKeyModal()">取消</button>
+    </div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="tools.js"></script>
+<script src="validator.js"></script>
+<script src="agent.js"></script>
+<script>
+const LEVEL_LABEL = {"高": "高风险", "中": "中风险", "低": "低风险", "待复核": "待复核"};
+
+// ── API Key / 厂商状态 ─────────────────────────
+function checkKey() {
+  const on = hasApiKey();
+  const provider = getProvider().name;
+  document.getElementById("keydot").className = "dot " + (on ? "on" : "off");
+  document.getElementById("keytext").textContent = on
+    ? `已配置 · ${provider} · ${getModel()}`
+    : "需要设置 API Key";
+  return on;
+}
+
+// 填充厂商下拉框
+function fillProviderSelect() {
+  const sel = document.getElementById("providerSelect");
+  sel.innerHTML = Object.entries(PROVIDERS).map(([id, p]) =>
+    `<option value="${id}">${p.name}</option>`).join("");
+  sel.value = getProviderId();
+}
+
+// 厂商切换：联动模型下拉框 + 显示/隐藏自定义字段
+function onProviderChange() {
+  const id = document.getElementById("providerSelect").value;
+  const modelSel = document.getElementById("modelSelect");
+  const customFields = document.getElementById("customFields");
+
+  if (id === "custom") {
+    modelSel.innerHTML = "";
+    modelSel.disabled = true;
+    customFields.style.display = "block";
+  } else {
+    const p = PROVIDERS[id];
+    modelSel.innerHTML = p.models.map(m => `<option value="${m}">${m}</option>`).join("");
+    modelSel.disabled = false;
+    customFields.style.display = "none";
+  }
+}
+
+function openKeyModal() {
+  fillProviderSelect();
+  onProviderChange();
+  // 回填当前配置
+  const id = getProviderId();
+  document.getElementById("providerSelect").value = id;
+  document.getElementById("keyinput").value = getApiKey() || "";
+  if (id === "custom") {
+    document.getElementById("customBase").value = localStorage.getItem("rental_custom_base") || "";
+    document.getElementById("customModel").value = localStorage.getItem("rental_custom_model") || "";
+  } else {
+    document.getElementById("modelSelect").value = getModel() || PROVIDERS[id].models[0];
+  }
+  document.getElementById("keymodal").classList.add("visible");
+}
+
+function closeKeyModal() {
+  document.getElementById("keymodal").classList.remove("visible");
+}
+
+function saveKey() {
+  const providerId = document.getElementById("providerSelect").value;
+  const apiKey = document.getElementById("keyinput").value.trim();
+  if (!apiKey) { alert("请输入 API Key"); return; }
+
+  let model, customBase = "", customModel = "";
+  if (providerId === "custom") {
+    customBase = document.getElementById("customBase").value.trim();
+    customModel = document.getElementById("customModel").value.trim();
+    if (!customBase || !customModel) { alert("自定义厂商需填写 API 地址和模型名"); return; }
+  } else {
+    model = document.getElementById("modelSelect").value;
+  }
+
+  saveConfig(providerId, apiKey, model, customBase, customModel);
+  closeKeyModal();
+  document.getElementById("keyinput").value = "";
+  checkKey();
+  alert("已保存到本机，可以直接开始审查了");
+}
+
+// ── 审查主流程 ───────────────────────────────
+async function review() {
+  const text = document.getElementById("contract").value.trim();
+  const btn = document.getElementById("btn");
+  const status = document.getElementById("status");
+  const logEl = document.getElementById("log");
+  const result = document.getElementById("result");
+
+  if (!text) { status.textContent = "请先粘贴合同内容"; return; }
+  if (!checkKey()) {
+    status.textContent = "";
+    result.innerHTML = `<div class="error">尚未配置 API Key，请先点「设置」选择厂商并填入你的 API Key。</div>`;
+    result.classList.add("visible");
+    return;
+  }
+
+  // 输入校验
+  const check = validateInput(text);
+  if (!check.ok) {
+    status.textContent = "";
+    result.innerHTML = `<div class="error">${check.reason}</div>`;
+    result.classList.add("visible");
+    return;
+  }
+
+  btn.disabled = true;
+  status.textContent = "⏳ 审查中，请稍候（通常需要 10~60 秒）...";
+  logEl.textContent = "";
+  result.classList.remove("visible");
+
+  try {
+    const r = await runReview(getApiKey(), text, (msg) => {
+      logEl.textContent += msg + "\n";
+    });
+    status.textContent = "✅ 完成";
+    renderResult(r);
+  } catch (e) {
+    status.textContent = "";
+    result.innerHTML = `<div class="error">审查失败：${e.message}</div>`;
+    result.classList.add("visible");
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function renderResult(r) {
+  const el = document.getElementById("result");
+  const passClass = r.pass === "是" ? "pass" : (r.pass === "否" ? "pass-fail" : "pass-review");
+
+  let risks = "";
+  if (!r.risks || r.risks.length === 0) {
+    risks = `<div class="empty">未发现明显风险点</div>`;
+  } else {
+    risks = r.risks.map(risk => {
+      const lv = risk.level === "待复核" ? "review" : risk.level;
+      const lvlClass = risk.level === "待复核" ? "review" : (risk.level === "低" ? "low" : (risk.level === "中" ? "mid" : "high"));
+      return `
+        <div class="risk ${lvlClass}">
+          <div class="risk-head">
+            <span class="item">${risk.item}</span>
+            <span class="lvl ${lv}">${LEVEL_LABEL[risk.level] || risk.level}</span>
+          </div>
+          <div class="detail">${risk.detail}</div>
+          <div class="basis">依据：${risk.basis}</div>
+        </div>`;
+    }).join("");
+  }
+
+  el.innerHTML = `
+    <h2>审查结果</h2>
+    <div class="meta">
+      <span class="badge type">${r.document_type || "其他"}</span>
+      <span class="badge ${passClass}">审查结论：${r.pass}</span>
+    </div>
+    ${risks}
+    <h2 style="font-size:14px;margin:14px 0 8px">总体评价</h2>
+    <div class="summary">${r.summary || ""}</div>`;
+  el.classList.add("visible");
+}
+
+// 页面加载时检查 key 状态
+checkKey();
+</script>
+</body>
+</html>
