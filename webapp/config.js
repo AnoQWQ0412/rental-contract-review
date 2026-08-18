@@ -5,6 +5,7 @@
 
 // 预设厂商表：新增厂商只需在这里加一行
 // base_url 统一用 OpenAI 兼容的 /v1 地址
+// 注意：models 只是"参考建议"，界面支持直接输入任意模型名（不受此列表限制）
 const PROVIDERS = {
   deepseek: {
     name: "DeepSeek",
@@ -14,22 +15,22 @@ const PROVIDERS = {
   moonshot: {
     name: "Kimi（月之暗面）",
     base_url: "https://api.moonshot.cn/v1",
-    models: ["moonshot-v1-8k", "moonshot-v1-32k", "moonshot-v1-128k"],
+    models: ["kimi-k2-0711-preview", "moonshot-v1-128k", "moonshot-v1-32k"],
   },
   dashscope: {
     name: "通义千问（阿里云）",
     base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1",
-    models: ["qwen-plus", "qwen-max", "qwen-turbo"],
+    models: ["qwen3-max", "qwen3-plus", "qwen3-turbo", "qwen-max"],
   },
   zhipu: {
     name: "智谱 GLM",
     base_url: "https://open.bigmodel.cn/api/paas/v4",
-    models: ["glm-4", "glm-4-flash", "glm-4-plus"],
+    models: ["glm-4.5", "glm-4.5-air", "glm-4-plus", "glm-4-flash"],
   },
   ollama: {
     name: "Ollama（本地）",
     base_url: "http://localhost:11434/v1",
-    models: ["llama3.1", "qwen2.5", "deepseek-r1"],
+    models: ["qwen3", "llama3.2", "deepseek-r1", "deepseek-v3"],
   },
   custom: {
     name: "自定义（OpenAI 兼容）",

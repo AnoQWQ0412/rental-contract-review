@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">租赁合同审查</string>
-    <string name="title_activity_main">租赁合同审查</string>
+    <string name="app_name">ZTC</string>
+    <string name="title_activity_main">ZTC</string>
     <string name="package_name">com.rental.review</string>
     <string name="custom_url_scheme">com.rental.review</string>
 </resources>

@@ -5,40 +5,112 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>租赁合同审查</title>
 <style>
+  /* ===== 主题变量（浅色 · 默认） ===== */
+  :root {
+    --bg: #f0f2f6;
+    --card: #ffffff;
+    --text: #1a1a1a;
+    --text-sub: #555;
+    --text-muted: #888;
+    --text-faint: #aaa;
+    --border: #ddd;
+    --border-soft: #eee;
+    --surface: #f6f7f9;
+    --surface-2: #fafafa;
+    --surface-hover: #eef1f4;
+    --primary: #4a7dff;
+    --primary-hover: #3a6be6;
+    --primary-soft: #eef3ff;
+    --primary-border: #d5e0ff;
+    --primary-text: #3a6be6;
+    --danger: #d64545;
+    --danger-soft: #fdeaea;
+    --warn: #d99000;
+    --warn-soft: #fff5e0;
+    --ok: #22a65c;
+    --ok-soft: #e8f7ee;
+    --overlay: rgba(15,20,30,0.45);
+    --shadow: rgba(0,0,0,0.08);
+    --danger-text: #d64545;
+    --warn-text: #8a6d00;
+    --tabbar-bg: #fbfbfc;
+    --disabled: #b9c6e8;
+  }
+  /* ===== 主题变量（深色） ===== */
+  [data-theme="dark"] {
+    --bg: #12151a;
+    --card: #1c2026;
+    --text: #e7e9ee;
+    --text-sub: #b3b9c2;
+    --text-muted: #8b929c;
+    --text-faint: #666e78;
+    --border: #363c46;
+    --border-soft: #292e37;
+    --surface: #232833;
+    --surface-2: #20252e;
+    --surface-hover: #2b3240;
+    --primary: #5b8cff;
+    --primary-hover: #6f9bff;
+    --primary-soft: #25314d;
+    --primary-border: #2e3d5e;
+    --primary-text: #8eaaff;
+    --danger: #ff7070;
+    --danger-soft: #3a2329;
+    --warn: #e3a94b;
+    --warn-soft: #3a3120;
+    --ok: #45c983;
+    --ok-soft: #1e3a2c;
+    --overlay: rgba(0,0,0,0.62);
+    --shadow: rgba(0,0,0,0.4);
+    --danger-text: #ff8585;
+    --warn-text: #e0b26a;
+    --tabbar-bg: #181c22;
+    --disabled: #3d4450;
+  }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-    background: #f5f6f8;
+    background: var(--bg);
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    padding: 16px;
+    padding: 16px 16px 4px;
+    transition: background 0.2s ease, color 0.2s ease;
   }
   .app {
     width: 100%;
     max-width: 520px;
-    background: #fff;
+    background: var(--card);
     border-radius: 16px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-    padding: 20px;
+    box-shadow: 0 2px 12px var(--shadow);
+    padding: 20px 20px 4px;
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 20px);
+    transition: background 0.2s ease;
   }
-  h1 { font-size: 20px; color: #1a1a1a; margin-bottom: 6px; }
-  .sub { font-size: 13px; color: #888; margin-bottom: 16px; }
+  .page { flex: 1; }
+  .page.hidden { display: none; }
+  h1 { font-size: 20px; color: var(--text); margin-bottom: 6px; }
+  .sub { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
+  .hint { font-size: 11px; color: var(--text-faint); margin-top: 4px; }
+  .flex-spacer { flex: 1; }
   .keybar {
     display: flex;
     align-items: center;
     gap: 8px;
-    background: #f8f9fa;
+    background: var(--surface);
     border-radius: 10px;
     padding: 8px 12px;
-    margin-bottom: 14px;
+    margin-bottom: 8px;
     font-size: 12px;
-    color: #555;
+    color: var(--text-sub);
   }
   .keybar .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .keybar .dot.on { background: #22a65c; }
-  .keybar .dot.off { background: #d99000; }
+  .keybar .dot.on { background: var(--ok); }
+  .keybar .dot.off { background: var(--warn); }
   .keybar button {
     width: auto;
     margin: 0;
@@ -46,132 +118,419 @@
     font-size: 12px;
     font-weight: 500;
     border-radius: 8px;
-    background: #4a7dff;
+    background: var(--primary);
   }
+  .keybar button.sm, .toolbar button.sm {
+    width: auto;
+    margin: 0;
+    padding: 7px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text-sub);
+    border: 1px solid var(--border);
+  }
+  .keybar button.sm:hover, .toolbar button.sm:hover { background: var(--surface-hover); color: var(--text); }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
   .keymodal {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.4);
+    background: var(--overlay);
     display: none;
     align-items: center;
     justify-content: center;
     padding: 20px;
+    z-index: 900;
   }
   .keymodal.visible { display: flex; }
   .keymodal .box {
-    background: #fff;
+    background: var(--card);
+    color: var(--text);
     border-radius: 14px;
     padding: 20px;
     width: 100%;
     max-width: 400px;
+    max-height: 88vh;
+    overflow-y: auto;
   }
   .keymodal h3 { font-size: 16px; margin-bottom: 8px; }
-  .keymodal p { font-size: 12px; color: #888; margin-bottom: 12px; line-height: 1.6; }
-  .keymodal input {
+  .keymodal p { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.6; }
+  .keymodal input, .keymodal select, .keymodal textarea {
     width: 100%;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border);
     border-radius: 8px;
     padding: 10px 12px;
     font-size: 13px;
+    color: var(--text);
+    background: var(--card);
   }
+  .keymodal input:focus, .keymodal select:focus, .keymodal textarea:focus { outline: none; border-color: var(--primary); }
   .keymodal .row { display: flex; gap: 8px; margin-top: 12px; }
   .keymodal .row button { flex: 1; margin: 0; font-size: 14px; }
-  .keymodal .row .cancel { background: #ccc; }
-  .keymodal select {
-    width: 100%;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 10px 12px;
-    font-size: 13px;
-    background: #fff;
-    margin-bottom: 10px;
-  }
-  .keymodal label { display: block; font-size: 12px; color: #888; margin: 10px 0 4px; }
+  .keymodal .row .cancel { background: var(--text-muted); }
+  .keymodal label { display: block; font-size: 12px; color: var(--text-muted); margin: 10px 0 4px; }
   .keymodal .custom-only { display: none; }
   textarea {
     width: 100%;
     height: 180px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border);
     border-radius: 10px;
     padding: 12px;
     font-size: 14px;
     line-height: 1.6;
     resize: vertical;
     font-family: inherit;
+    color: var(--text);
+    background: var(--card);
   }
-  textarea:focus { outline: none; border-color: #4a7dff; }
+  textarea:focus { outline: none; border-color: var(--primary); }
   button {
     width: 100%;
     margin-top: 12px;
     padding: 13px;
     border: none;
     border-radius: 10px;
-    background: #4a7dff;
+    background: var(--primary);
     color: #fff;
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
     transition: background 0.2s;
   }
-  button:hover { background: #3a6be6; }
-  button:disabled { background: #b9c6e8; cursor: not-allowed; }
-  .status { font-size: 13px; color: #666; margin-top: 12px; min-height: 20px; }
-  .log { font-size: 12px; color: #999; margin-top: 8px; white-space: pre-wrap; font-family: monospace; }
+  button:hover { background: var(--primary-hover); }
+  button:disabled { background: var(--disabled); cursor: not-allowed; }
+  .status { font-size: 13px; color: var(--text-muted); margin-top: 12px; min-height: 20px; }
+  .log { font-size: 12px; color: var(--text-muted); margin-top: 8px; white-space: pre-wrap; font-family: monospace; }
   .result {
     margin-top: 16px;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--border-soft);
     padding-top: 16px;
     display: none;
   }
   .result.visible { display: block; }
-  .result h2 { font-size: 16px; color: #1a1a1a; margin-bottom: 12px; }
+  .result h2 { font-size: 16px; color: var(--text); margin-bottom: 12px; }
   .meta { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
   .badge { font-size: 12px; padding: 4px 10px; border-radius: 20px; font-weight: 600; }
-  .badge.type { background: #eef3ff; color: #3a6be6; }
-  .badge.pass { background: #e8f7ee; color: #22a65c; }
-  .badge.pass-fail { background: #fdeaea; color: #d64545; }
-  .badge.pass-review { background: #fff5e0; color: #d99000; }
+  .badge.type { background: var(--primary-soft); color: var(--primary-text); }
+  .badge.pass { background: var(--ok-soft); color: var(--ok); }
+  .badge.pass-fail { background: var(--danger-soft); color: var(--danger-text); }
+  .badge.pass-review { background: var(--warn-soft); color: var(--warn-text); }
   .risk {
-    background: #fafafa;
-    border-left: 3px solid #ccc;
+    background: var(--surface-2);
+    border-left: 3px solid var(--border);
     border-radius: 8px;
     padding: 10px 12px;
     margin-bottom: 10px;
   }
-  .risk.high { border-left-color: #d64545; }
-  .risk.mid { border-left-color: #d99000; }
-  .risk.low { border-left-color: #4a7dff; }
+  .risk.high { border-left-color: var(--danger); }
+  .risk.mid { border-left-color: var(--warn); }
+  .risk.low { border-left-color: var(--primary); }
   .risk .risk-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-  .risk .item { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+  .risk .item { font-size: 14px; font-weight: 600; color: var(--text); }
   .risk .lvl { font-size: 11px; padding: 2px 8px; border-radius: 12px; }
-  .risk .lvl.high { background: #fdeaea; color: #d64545; }
-  .risk .lvl.mid { background: #fff5e0; color: #d99000; }
-  .risk .lvl.low { background: #eef3ff; color: #3a6be6; }
-  .risk .lvl.review { background: #eee; color: #666; }
-  .risk .detail { font-size: 13px; color: #444; line-height: 1.5; margin-bottom: 4px; }
-  .risk .basis { font-size: 12px; color: #999; }
-  .summary { font-size: 13px; color: #333; line-height: 1.6; background: #f8f9fa; border-radius: 8px; padding: 10px 12px; }
-  .empty { font-size: 13px; color: #888; text-align: center; padding: 12px; }
-  .error { font-size: 13px; color: #d64545; background: #fdeaea; border-radius: 8px; padding: 12px; margin-top: 16px; }
+  .risk .lvl.high { background: var(--danger-soft); color: var(--danger-text); }
+  .risk .lvl.mid { background: var(--warn-soft); color: var(--warn-text); }
+  .risk .lvl.low { background: var(--primary-soft); color: var(--primary-text); }
+  .risk .lvl.review { background: var(--surface); color: var(--text-muted); }
+  .risk .detail { font-size: 13px; color: var(--text-sub); line-height: 1.5; margin-bottom: 4px; }
+  .risk .basis { font-size: 12px; color: var(--text-muted); }
+  .summary { font-size: 13px; color: var(--text-sub); line-height: 1.6; background: var(--surface); border-radius: 8px; padding: 10px 12px; }
+  .empty { font-size: 13px; color: var(--text-muted); text-align: center; padding: 12px; }
+  .error { font-size: 13px; color: var(--danger-text); background: var(--danger-soft); border-radius: 8px; padding: 12px; margin-top: 16px; }
+  /* 图片识别预览区 */
+  .ocr-preview {
+    margin-top: 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+    background: var(--surface-2);
+  }
+  .ocr-preview img { max-width: 100%; max-height: 220px; border-radius: 8px; }
+  .ocr-actions { display: flex; gap: 8px; margin-top: 10px; }
+  .ocr-actions button { flex: 1; margin: 0; font-size: 14px; }
+  .ocr-actions button.cancel { background: var(--text-muted); }
+  .ocr-preview .status { margin-top: 8px; min-height: 0; }
+  /* 历史记录弹窗 */
+  .hist-box { max-width: 520px; max-height: 85vh; display: flex; flex-direction: column; }
+  .hist-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .hist-head h3 { font-size: 16px; margin: 0; }
+  .hist-actions button { width: auto; margin: 0; padding: 5px 12px; font-size: 12px; border-radius: 8px; background: var(--surface); color: var(--text-sub); border: 1px solid var(--border); }
+  .hist-list { flex: 1; overflow-y: auto; }
+  .hist-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    background: var(--surface-2);
+  }
+  .hist-item:active { background: var(--surface-hover); }
+  .hist-item .info { flex: 1; min-width: 0; }
+  .hist-item .time { font-size: 11px; color: var(--text-muted); }
+  .hist-item .preview { font-size: 13px; color: var(--text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+  .hist-item .badge { font-size: 11px; padding: 2px 8px; }
+  .hist-item .del { font-size: 12px; color: var(--danger-text); background: none; border: none; padding: 4px; margin: 0; width: auto; cursor: pointer; }
+  .hist-detail { border-top: 1px solid var(--border-soft); padding-top: 12px; margin-top: 8px; overflow-y: auto; }
+  .hist-empty { font-size: 13px; color: var(--text-muted); text-align: center; padding: 24px 0; }
+  /* 风险点法律依据查询区 */
+  .legal-btn {
+    width: auto;
+    margin: 8px 0 0;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 8px;
+    background: var(--primary-soft);
+    color: var(--primary-text);
+    border: 1px solid var(--primary-border);
+    cursor: pointer;
+  }
+  .legal-btn:disabled { color: var(--text-muted); background: var(--surface); border-color: var(--border); }
+  .legal-area {
+    margin-top: 8px;
+    border: 1px dashed var(--primary-border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    background: var(--primary-soft);
+    font-size: 12px;
+    color: var(--text-sub);
+    line-height: 1.6;
+  }
+  .legal-area .law { font-weight: 600; color: var(--primary-text); }
+  .legal-area .interp { margin: 6px 0; }
+  .legal-area .sugg b { color: var(--primary-text); }
+  .legal-area .law, .legal-area .interp, .legal-area .sugg { white-space: pre-wrap; }
+  .legal-loading { color: var(--text-muted); text-align: center; padding: 6px; }
+  .legal-error { color: var(--danger-text); }
+  /* 用户须知弹窗 / 连接检测弹窗共用 */
+  .notice {
+    position: fixed;
+    inset: 0;
+    background: var(--overlay);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 1000;
+  }
+  .notice .box {
+    background: var(--card);
+    color: var(--text);
+    border-radius: 16px;
+    padding: 22px;
+    width: 100%;
+    max-width: 460px;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+  .notice h2 { font-size: 18px; color: var(--text); margin-bottom: 6px; }
+  .notice .ver { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
+  .notice h4 { font-size: 14px; color: var(--text-sub); margin: 14px 0 6px; }
+  .notice p, .notice li { font-size: 13px; color: var(--text-sub); line-height: 1.7; }
+  .notice ul { padding-left: 18px; margin: 4px 0; }
+  .notice .warn { background: var(--warn-soft); border-radius: 8px; padding: 10px 12px; font-size: 13px; color: var(--warn-text); margin-top: 10px; }
+  .notice button { margin-top: 16px; padding: 13px; background: var(--primary); }
+  /* 底部 Tab 栏 */
+  .tabbar {
+    display: flex;
+    border-top: 1px solid var(--border-soft);
+    margin-top: 16px;
+    padding: 6px 0 4px;
+    background: var(--tabbar-bg);
+    border-radius: 0 0 12px 12px;
+  }
+  .tabbar .tab {
+    flex: 1;
+    margin: 0;
+    padding: 10px 0;
+    background: none;
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 10px;
+  }
+  .tabbar .tab:hover { background: var(--surface-hover); color: var(--text); }
+  .tabbar .tab.active { background: var(--primary-soft); color: var(--primary-text); }
+  /* 更多面板 */
+  .more-card { margin-bottom: 14px; }
+  .more-card h3 { font-size: 14px; color: var(--primary-text); margin-bottom: 8px; }
+  .more-box {
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    padding: 14px;
+  }
+  .theme-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .theme-row .chip {
+    width: auto;
+    margin: 0;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 20px;
+    background: var(--surface);
+    color: var(--text-sub);
+    border: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .theme-row .chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .changelog { font-size: 13px; line-height: 1.7; color: var(--text-sub); }
+  .changelog .ver { font-weight: 600; color: var(--primary-text); margin-top: 8px; }
+  .changelog .ver:first-child { margin-top: 0; }
+  .changelog ul { padding-left: 18px; }
+  .about-line { font-size: 13px; color: var(--text-sub); line-height: 1.8; }
+  .about-line b { color: var(--text); }
+  /* 连接检测结果 */
+  .conn-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13px;
+    line-height: 1.5;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--border-soft);
+    color: var(--text-sub);
+  }
+  .conn-step:last-child { border-bottom: none; }
+  .conn-step .icon { flex-shrink: 0; font-weight: 600; }
+  .conn-step.ok .icon { color: var(--ok); }
+  .conn-step.err .icon { color: var(--danger-text); }
+  .conn-step.ok { color: var(--text-sub); }
+  .conn-step.err { color: var(--danger-text); }
+  .conn-result { margin-top: 12px; border-radius: 10px; padding: 12px; font-size: 13px; line-height: 1.6; }
+  .conn-result.ok { background: var(--ok-soft); color: var(--ok); }
+  .conn-result.err { background: var(--danger-soft); color: var(--danger-text); }
 </style>
 </head>
 <body>
 <div class="app">
-  <h1>📋 租赁合同审查</h1>
-  <div class="sub">纯客户端运行 · 你的 API Key 只存在本机，不上传任何服务器</div>
+  <!-- ===== Tab 1：审查（主界面） ===== -->
+  <div class="page" id="page-review">
+    <h1>📋 租赁合同审查</h1>
+    <div class="sub">纯客户端运行 · 你的 API Key 只存在本机，不上传任何服务器</div>
 
-  <div class="keybar">
-    <span class="dot" id="keydot"></span>
-    <span id="keytext">检查 API Key...</span>
-    <button onclick="openKeyModal()">设置</button>
+    <div class="keybar">
+      <span class="dot" id="keydot"></span>
+      <span id="keytext">检查 API Key...</span>
+      <span class="flex-spacer"></span>
+      <button onclick="openKeyModal()">⚙️ 设置</button>
+    </div>
+    <div class="toolbar">
+      <button class="sm" onclick="openHistory()">📜 历史记录</button>
+      <button class="sm" onclick="document.getElementById('ocrInput').click()">📷 拍照识别</button>
+      <button class="sm" onclick="openConnTest()">🧪 检测连接</button>
+    </div>
+
+    <input type="file" id="ocrInput" accept="image/*" style="display:none" onchange="onOcrSelect(event)">
+    <div class="ocr-preview" id="ocrPreview" style="display:none">
+      <img id="ocrImg" alt="待识别图片">
+      <div class="ocr-actions">
+        <button onclick="runOcr()">识别文字</button>
+        <button class="cancel" onclick="cancelOcr()">取消</button>
+      </div>
+      <div class="status" id="ocrStatus"></div>
+    </div>
+
+    <textarea id="contract" placeholder="在此粘贴租赁合同全文…&#10;&#10;支持：住宅 / 商铺 / 办公 / 设备 / 车辆等各类租赁"></textarea>
+    <button id="btn" onclick="review()">开始审查</button>
+    <div class="status" id="status"></div>
+    <div class="log" id="log"></div>
+
+    <div class="result" id="result"></div>
   </div>
 
-  <textarea id="contract" placeholder="在此粘贴租赁合同全文…&#10;&#10;支持：住宅 / 商铺 / 办公 / 设备 / 车辆等各类租赁"></textarea>
-  <button id="btn" onclick="review()">开始审查</button>
-  <div class="status" id="status"></div>
-  <div class="log" id="log"></div>
+  <!-- ===== Tab 2：更多 ===== -->
+  <div class="page hidden" id="page-more">
+    <h1>⚙️ 更多</h1>
+    <div class="sub">外观、更新日志与关于</div>
 
-  <div class="result" id="result"></div>
+    <div class="more-card">
+      <h3>🎨 外观</h3>
+      <div class="more-box">
+        <div class="theme-row" id="themeRow">
+          <button class="chip" data-choice="auto" onclick="setTheme('auto')">🌓 跟随系统</button>
+          <button class="chip" data-choice="light" onclick="setTheme('light')">☀️ 浅色</button>
+          <button class="chip" data-choice="dark" onclick="setTheme('dark')">🌙 深色</button>
+        </div>
+        <p class="hint">选择「跟随系统」时，将自动匹配手机的浅色/深色设置</p>
+      </div>
+    </div>
+
+    <div class="more-card">
+      <h3>📜 更新日志</h3>
+      <div class="more-box changelog">
+        <div class="ver">v1.1.0（当前）</div>
+        <ul>
+          <li>新增底部 Tab 栏（审查 / 更多）</li>
+          <li>新增深色 / 浅色 / 跟随系统三种外观</li>
+          <li>新增「检测连接」：一键排查网络、API 地址、Key、模型、CORS 等问题</li>
+          <li>支持原生网络请求（打包 App 可直连未开放 CORS 的服务）</li>
+          <li>修复首次「我已知晓」弹窗重复出现的问题</li>
+        </ul>
+        <div class="ver">v1.0.0</div>
+        <ul>
+          <li>租赁合同智能审查（住宅 / 商铺 / 办公 / 设备 / 车辆）</li>
+          <li>支持多家模型厂商（DeepSeek / Kimi / 通义 / 智谱 / Ollama / 自定义）</li>
+          <li>审查记录（最多保留 30 条）</li>
+          <li>图片文字识别（OCR）</li>
+          <li>风险点「查询法律依据与建议」</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="more-card">
+      <h3>ℹ️ 关于</h3>
+      <div class="more-box">
+        <div class="about-line"><b>名称：</b>ZTC 租赁合同审查</div>
+        <div class="about-line"><b>版本：</b>v1.1.0</div>
+        <div class="about-line"><b>设计者：</b>Ano</div>
+        <div class="about-line"><b>隐私：</b>纯客户端运行，合同文本与 API Key 仅保存在本机，不上传任何服务器。</div>
+        <div class="about-line"><b>版权：</b>受著作权法保护，未经授权不得二次分发、倒卖或商用。</div>
+        <div class="about-line"><b>免责：</b>审查结果由 AI 生成，仅供参考，不构成法律意见。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 底部 Tab 栏 ===== -->
+  <nav class="tabbar" id="tabbar">
+    <button class="tab active" data-tab="review" onclick="switchTab('review')">📋 审查</button>
+    <button class="tab" data-tab="more" onclick="switchTab('more')">⚙️ 更多</button>
+  </nav>
+</div>
+
+<!-- 首次打开的用户须知 -->
+<div class="notice" id="notice">
+  <div class="box">
+    <h2>📋 租赁合同审查 ZTC</h2>
+    <div class="ver">版本 1.0.0 · 设计者：Ano</div>
+
+    <h4>一、软件说明</h4>
+    <p>本软件是一款用于租赁合同风险审查的辅助工具，支持住宅、商铺、办公、设备、车辆等各类租赁合同。软件根据你粘贴的合同文本，自动识别类型并出具风险报告，供专业复核参考。</p>
+
+    <h4>二、使用规范</h4>
+    <ul>
+      <li>请使用真实、完整的合同文本进行审查；</li>
+      <li>审查结果由 AI 模型生成，仅供参考，不构成法律意见；</li>
+      <li>涉及重大权益的合同，请务必交由专业法律人士复核；</li>
+      <li>请勿利用本软件进行任何违法活动或用途。</li>
+    </ul>
+
+    <h4>三、隐私与数据</h4>
+    <ul>
+      <li>本软件为纯客户端运行，你的合同文本与 API Key 仅保存在你的设备本地；</li>
+      <li>软件调用你自行配置的 AI 服务商接口完成审查，请留意所选服务商的隐私政策；</li>
+      <li>请勿在合同中输入涉及个人敏感信息的非必要内容。</li>
+    </ul>
+
+    <div class="warn">⚠️ 版权声明：本软件由设计者 Ano 开发，受著作权法保护。未经授权，不得进行二次分发、倒卖、篡改或用于商业牟利。请支持正版软件。</div>
+
+    <button onclick="dismissNotice()">我已知晓</button>
+  </div>
 </div>
 
 <!-- 设置弹窗：选厂商 + 填 key + 选模型 -->
@@ -184,17 +543,18 @@
     <select id="providerSelect" onchange="onProviderChange()"></select>
 
     <label>API Key</label>
-    <input id="keyinput" type="password" placeholder="sk-...">
+    <input id="keyinput" type="password" placeholder="sk-..." autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="text">
 
     <div class="custom-only" id="customFields">
       <label>自定义 API 地址（base_url）</label>
-      <input id="customBase" type="text" placeholder="https://api.example.com/v1">
+      <input id="customBase" type="text" placeholder="https://api.example.com/v1" autocomplete="off" autocapitalize="off" spellcheck="false">
       <label>模型名</label>
-      <input id="customModel" type="text" placeholder="model-name">
+      <input id="customModel" type="text" placeholder="model-name" autocomplete="off" autocapitalize="off" spellcheck="false">
     </div>
 
     <label>模型</label>
-    <select id="modelSelect"></select>
+    <input id="modelInput" placeholder="直接输入模型名，如 deepseek-chat" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <p class="hint">模型名需自己填写，DeepSeek 常用 deepseek-chat</p>
 
     <div class="row">
       <button onclick="saveKey()">保存</button>
@@ -203,10 +563,44 @@
   </div>
 </div>
 
+<!-- 历史记录弹窗 -->
+<div class="keymodal" id="histmodal">
+  <div class="box hist-box">
+    <div class="hist-head">
+      <h3>📜 审查记录（最多保留 30 条）</h3>
+      <div class="hist-actions">
+        <button onclick="clearAllHistory()">清空</button>
+      </div>
+    </div>
+    <div class="hist-list" id="histList"></div>
+    <div class="hist-detail" id="histDetail" style="display:none"></div>
+    <div class="row">
+      <button class="cancel" onclick="closeHistory()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- 连接检测弹窗 -->
+<div class="keymodal" id="connmodal">
+  <div class="box">
+    <h3>🧪 检测连接</h3>
+    <p>用最小请求检测你的配置是否可用（几乎不消耗 token），并逐项排查可能的问题。</p>
+    <div id="connSteps"></div>
+    <div id="connResult"></div>
+    <div class="row">
+      <button onclick="runConnTest()">重新检测</button>
+      <button class="cancel" onclick="closeConnModal()">关闭</button>
+    </div>
+  </div>
+</div>
+
 <script src="config.js"></script>
 <script src="tools.js"></script>
 <script src="validator.js"></script>
 <script src="agent.js"></script>
+<script src="history.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
+<script src="ocr.js"></script>
 <script>
 const LEVEL_LABEL = {"高": "高风险", "中": "中风险", "低": "低风险", "待复核": "待复核"};
 
@@ -229,22 +623,11 @@ function fillProviderSelect() {
   sel.value = getProviderId();
 }
 
-// 厂商切换：联动模型下拉框 + 显示/隐藏自定义字段
+// 厂商切换：只控制自定义字段显隐；模型名始终由用户自行填写
 function onProviderChange() {
   const id = document.getElementById("providerSelect").value;
-  const modelSel = document.getElementById("modelSelect");
   const customFields = document.getElementById("customFields");
-
-  if (id === "custom") {
-    modelSel.innerHTML = "";
-    modelSel.disabled = true;
-    customFields.style.display = "block";
-  } else {
-    const p = PROVIDERS[id];
-    modelSel.innerHTML = p.models.map(m => `<option value="${m}">${m}</option>`).join("");
-    modelSel.disabled = false;
-    customFields.style.display = "none";
-  }
+  customFields.style.display = (id === "custom") ? "block" : "none";
 }
 
 function openKeyModal() {
@@ -257,8 +640,11 @@ function openKeyModal() {
   if (id === "custom") {
     document.getElementById("customBase").value = localStorage.getItem("rental_custom_base") || "";
     document.getElementById("customModel").value = localStorage.getItem("rental_custom_model") || "";
+    document.getElementById("modelInput").value = "";
   } else {
-    document.getElementById("modelSelect").value = getModel() || PROVIDERS[id].models[0];
+    // 预填当前模型；没有则给该厂商第一个模型名作提示（用户可改）
+    const defaultModel = (PROVIDERS[id].models || [])[0] || "";
+    document.getElementById("modelInput").value = getModel() || defaultModel;
   }
   document.getElementById("keymodal").classList.add("visible");
 }
@@ -278,7 +664,8 @@ function saveKey() {
     customModel = document.getElementById("customModel").value.trim();
     if (!customBase || !customModel) { alert("自定义厂商需填写 API 地址和模型名"); return; }
   } else {
-    model = document.getElementById("modelSelect").value;
+    model = document.getElementById("modelInput").value.trim();
+    if (!model) { alert("请填写模型名（可从下拉选择，也可直接输入）"); return; }
   }
 
   saveConfig(providerId, apiKey, model, customBase, customModel);
@@ -324,6 +711,7 @@ async function review() {
     });
     status.textContent = "✅ 完成";
     renderResult(r);
+    saveHistory(text, r);   // 自动存入审查记录（最多 30 条）
   } catch (e) {
     status.textContent = "";
     result.innerHTML = `<div class="error">审查失败：${e.message}</div>`;
@@ -335,41 +723,285 @@ async function review() {
 
 function renderResult(r) {
   const el = document.getElementById("result");
+  el.innerHTML = renderReportHTML(r);
+  el.classList.add("visible");
+}
+
+// 生成审查报告 HTML（主页面和历史记录复用）
+function renderReportHTML(r) {
   const passClass = r.pass === "是" ? "pass" : (r.pass === "否" ? "pass-fail" : "pass-review");
+  window.__lastRisks = r.risks || [];   // 供「查询法律依据」按钮按索引读取
 
   let risks = "";
   if (!r.risks || r.risks.length === 0) {
     risks = `<div class="empty">未发现明显风险点</div>`;
   } else {
-    risks = r.risks.map(risk => {
+    risks = r.risks.map((risk, i) => {
       const lv = risk.level === "待复核" ? "review" : risk.level;
       const lvlClass = risk.level === "待复核" ? "review" : (risk.level === "低" ? "low" : (risk.level === "中" ? "mid" : "high"));
       return `
         <div class="risk ${lvlClass}">
           <div class="risk-head">
-            <span class="item">${risk.item}</span>
+            <span class="item">${esc(risk.item)}</span>
             <span class="lvl ${lv}">${LEVEL_LABEL[risk.level] || risk.level}</span>
           </div>
-          <div class="detail">${risk.detail}</div>
-          <div class="basis">依据：${risk.basis}</div>
+          <div class="detail">${esc(risk.detail)}</div>
+          <div class="basis">依据：${esc(risk.basis)}</div>
+          <button type="button" class="legal-btn" onclick="queryLegal(this, ${i})">📚 查询法律依据与建议</button>
+          <div class="legal-area" style="display:none"></div>
         </div>`;
     }).join("");
   }
 
-  el.innerHTML = `
+  return `
     <h2>审查结果</h2>
     <div class="meta">
-      <span class="badge type">${r.document_type || "其他"}</span>
-      <span class="badge ${passClass}">审查结论：${r.pass}</span>
+      <span class="badge type">${esc(r.document_type) || "其他"}</span>
+      <span class="badge ${passClass}">审查结论：${esc(r.pass)}</span>
     </div>
     ${risks}
     <h2 style="font-size:14px;margin:14px 0 8px">总体评价</h2>
-    <div class="summary">${r.summary || ""}</div>`;
-  el.classList.add("visible");
+    <div class="summary">${esc(r.summary)}</div>`;
+}
+
+// ── 历史记录 ─────────────────────────────
+function openHistory() {
+  document.getElementById("histmodal").classList.add("visible");
+  document.getElementById("histDetail").style.display = "none";
+  renderHistoryList();
+}
+
+function closeHistory() {
+  document.getElementById("histmodal").classList.remove("visible");
+}
+
+function renderHistoryList() {
+  const records = loadHistory();
+  const list = document.getElementById("histList");
+  if (records.length === 0) {
+    list.innerHTML = `<div class="hist-empty">暂无审查记录</div>`;
+    return;
+  }
+  list.innerHTML = records.map(r => {
+    const passClass = r.result.pass === "是" ? "pass" : (r.result.pass === "否" ? "pass-fail" : "pass-review");
+    return `
+      <div class="hist-item" onclick="viewHistory('${r.id}')">
+        <div class="info">
+          <div class="time">${formatTime(r.time)}</div>
+          <div class="preview">${esc(r.preview)}</div>
+        </div>
+        <span class="badge ${passClass}">${esc(r.result.pass)}</span>
+        <button class="del" onclick="event.stopPropagation(); deleteHistoryItem('${r.id}')" title="删除">✕</button>
+      </div>`;
+  }).join("");
+}
+
+function viewHistory(id) {
+  const r = loadHistory().find(x => x.id === id);
+  if (!r) return;
+  const detail = document.getElementById("histDetail");
+  detail.innerHTML = `
+    <h3 style="font-size:14px;margin:0 0 6px">合同原文</h3>
+    <div class="summary" style="white-space:pre-wrap;max-height:160px;overflow-y:auto">${esc(r.contract)}</div>
+    <h3 style="font-size:14px;margin:12px 0 6px">审查报告</h3>
+    ${renderReportHTML(r.result)}
+  `;
+  detail.style.display = "block";
+}
+
+function deleteHistoryItem(id) {
+  deleteHistory(id);
+  renderHistoryList();
+  document.getElementById("histDetail").style.display = "none";
+}
+
+function clearAllHistory() {
+  if (!confirm("确定清空所有审查记录？")) return;
+  clearHistory();
+  renderHistoryList();
+  document.getElementById("histDetail").style.display = "none";
+}
+
+// 简单的 HTML 转义，防止合同内容里的特殊字符破坏页面
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+}
+
+// ── 图片识别（OCR）────────────────────────
+let _ocrFile = null;
+
+function onOcrSelect(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  _ocrFile = file;
+  document.getElementById("ocrImg").src = fileToURL(file);
+  document.getElementById("ocrStatus").textContent = "";
+  document.getElementById("ocrPreview").style.display = "block";
+  event.target.value = "";   // 允许下次重新选择同一文件
+}
+
+function cancelOcr() {
+  _ocrFile = null;
+  document.getElementById("ocrPreview").style.display = "none";
+  document.getElementById("ocrStatus").textContent = "";
+}
+
+async function runOcr() {
+  if (!_ocrFile) return;
+  const status = document.getElementById("ocrStatus");
+  status.textContent = "⏳ 正在准备识别引擎（首次需下载中文语言包，已在后台预下载，稍候）...";
+  try {
+    const text = await recognizeImage(_ocrFile, (p) => {
+      status.textContent = `⏳ 识别中 ${p}%...`;
+    });
+    if (!text) {
+      status.textContent = "⚠️ 未识别到文字，请换一张更清晰的图片试试";
+      return;
+    }
+    document.getElementById("contract").value = text;
+    status.textContent = `✅ 识别完成，共 ${text.length} 字（请核对后点击开始审查）`;
+    document.getElementById("ocrPreview").style.display = "none";
+    _ocrFile = null;
+  } catch (e) {
+    status.textContent = `❌ 识别失败：${e.message}`;
+  }
+}
+
+// ── 风险点法律依据与建议补充查询 ─────────────
+async function queryLegal(btn, idx) {
+  const card = btn.closest(".risk");
+  if (!card) return;
+  const area = card.querySelector(".legal-area");
+  const risk = (window.__lastRisks || [])[idx];
+  if (!risk) return;
+
+  // 已展开 → 折叠
+  if (area.classList.contains("shown")) {
+    area.classList.remove("shown");
+    area.style.display = "none";
+    btn.textContent = "📚 查询法律依据与建议";
+    return;
+  }
+  // 查过 → 直接展开
+  if (area.dataset.loaded === "1") {
+    area.classList.add("shown");
+    area.style.display = "block";
+    btn.textContent = "📚 收起";
+    return;
+  }
+  if (!checkKey()) { alert("请先点击「设置」配置 API Key"); return; }
+
+  btn.disabled = true;
+  btn.textContent = "⏳ 查询中...";
+  area.style.display = "block";
+  area.innerHTML = `<div class="legal-loading">正在查询相关法律法规与建议...</div>`;
+  try {
+    // 优先用当前绑定的合同原文
+    const contract = window.__contract || document.getElementById("contract").value || "";
+    const info = await queryLegalAdvice(getApiKey(), risk, contract);
+    area.classList.add("shown");
+    area.innerHTML = renderLegalAdvice(info);
+    area.dataset.loaded = "1";
+    btn.textContent = "📚 收起";
+  } catch (e) {
+    area.innerHTML = `<div class="legal-error">查询失败：${esc(e.message)}（可重试）</div>`;
+    btn.textContent = "📚 重试";
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function renderLegalAdvice(info) {
+  return `
+    <div class="law">⚖️ 相关法条：${esc(info.law)}</div>
+    <div class="interp">📖 适用解释：${esc(info.interpretation)}</div>
+    <div class="sugg">💡 <b>补充建议：</b>${esc(info.suggestion)}</div>`;
 }
 
 // 页面加载时检查 key 状态
 checkKey();
+
+// ── 主题管理（浅色 / 深色 / 跟随系统）──────────
+const THEME_KEY = "ztc_theme";
+function getSavedTheme() { return localStorage.getItem(THEME_KEY) || "auto"; }
+function applyTheme(choice) {
+  const dark = choice === "dark" || (choice === "auto" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+  document.querySelectorAll("#themeRow .chip").forEach(c =>
+    c.classList.toggle("active", c.dataset.choice === choice));
+}
+function setTheme(choice) {
+  localStorage.setItem(THEME_KEY, choice);
+  applyTheme(choice);
+}
+function initTheme() {
+  applyTheme(getSavedTheme());
+  window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+    if (getSavedTheme() === "auto") applyTheme("auto");
+  });
+}
+
+// ── 底部 Tab 切换 ─────────────────────────
+function switchTab(name) {
+  document.getElementById("page-review").classList.toggle("hidden", name !== "review");
+  document.getElementById("page-more").classList.toggle("hidden", name !== "more");
+  document.querySelectorAll("#tabbar .tab").forEach(t =>
+    t.classList.toggle("active", t.dataset.tab === name));
+}
+
+// ── 连接检测 UI ─────────────────────────
+function openConnTest() {
+  document.getElementById("connmodal").classList.add("visible");
+  runConnTest();
+}
+function closeConnModal() {
+  document.getElementById("connmodal").classList.remove("visible");
+}
+function connRender(state) {
+  const stepsEl = document.getElementById("connSteps");
+  stepsEl.innerHTML = state.steps.map(s =>
+    `<div class="conn-step ${s.ok ? "ok" : "err"}"><span class="icon">${s.ok ? "✅" : "❌"}</span><span>${esc(s.msg)}</span></div>`).join("");
+  const resEl = document.getElementById("connResult");
+  resEl.className = "conn-result " + (state.finalOk ? "ok" : "err");
+  resEl.textContent = state.summary || "";
+}
+async function runConnTest() {
+  const btn = document.querySelector("#connmodal .row button");
+  const resEl = document.getElementById("connResult");
+  const stepsEl = document.getElementById("connSteps");
+  stepsEl.innerHTML = `<div class="conn-step"><span class="icon">⏳</span><span>正在逐项检测...</span></div>`;
+  resEl.className = "conn-result";
+  resEl.textContent = "";
+  if (btn) btn.disabled = true;
+  try {
+    connRender(await testConnection(getApiKey()));
+  } catch (e) {
+    connRender({ steps: [{ ok: false, msg: "检测过程出错：" + esc(e.message) }], finalOk: false, summary: "未能完成检测，请重试" });
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+// ── 首次打开的用户须知 ─────────────────────────
+function dismissNotice() {
+  localStorage.setItem("ztc_notice_read", "1");
+  document.getElementById("notice").style.display = "none";
+}
+(function () {
+  // 已读则隐藏，未读则显示（必须显式设置，不能依赖 CSS 默认值）
+  const read = localStorage.getItem("ztc_notice_read");
+  document.getElementById("notice").style.display = (read === "1") ? "none" : "flex";
+})();
+
+// ── 后台预下载 OCR 语言包（提速：页面打开后就开始下载，点识别时几乎不用等）──
+if (document.readyState === "complete") {
+  setTimeout(preloadOcr, 3000);
+} else {
+  window.addEventListener("load", () => setTimeout(preloadOcr, 3000));
+}
+
+// 初始化主题（script 位于 body 末尾，此时 DOM 已就绪）
+initTheme();
 </script>
 </body>
 </html>

@@ -1,5 +1,10 @@
 {
   "appId": "com.rental.review",
-  "appName": "租赁合同审查",
-  "webDir": "www"
+  "appName": "ZTC",
+  "webDir": "www",
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    }
+  }
 }
