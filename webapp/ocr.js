@@ -22,8 +22,12 @@ function createOcrWorker() {
   _ocrLoading = Tesseract.createWorker(["chi_sim", "eng"], 1, {
     langPath: OCR_LANG_PATH,
     logger: (m) => {
-      if (_ocrOnProgress && m.status === "recognizing text") {
-        _ocrOnProgress(Math.round(m.progress * 100));
+      // 把所有阶段的进度都上报（下载语言包 / 初始化 / 识别文字）
+      if (_ocrOnProgress) {
+        _ocrOnProgress({
+          status: m.status,
+          progress: (m.progress != null && m.progress >= 0) ? Math.round(m.progress * 100) : -1,
+        });
       }
     },
   }).then(w => { _ocrWorker = w; _ocrLoading = null; return w; })
@@ -32,14 +36,14 @@ function createOcrWorker() {
 }
 
 // 预下载：后台静默初始化 worker 并下载语言包
-// 失败就静默忽略——不影响其它功能，用户真正用 OCR 时会再尝试并看到进度提示
+// 失败就静默忽略——不影响其它功能，用户真正用 OCR 时会再尝试并看到进度
 function preloadOcr() {
   createOcrWorker().catch(() => {});
 }
 
 // 从图片识别文字
 // imageInput: File 或 Blob（来自 <input type="file">）
-// onProgress: (percent) => void
+// onProgress: ({status, progress}) => void   progress 为 0-100 的百分比，-1 表示该阶段无进度值
 // 返回识别到的文本
 async function recognizeImage(imageInput, onProgress) {
   _ocrOnProgress = onProgress || null;

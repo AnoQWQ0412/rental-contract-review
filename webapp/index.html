@@ -252,6 +252,29 @@
   .ocr-actions button { flex: 1; margin: 0; font-size: 14px; }
   .ocr-actions button.cancel { background: var(--text-muted); }
   .ocr-preview .status { margin-top: 8px; min-height: 0; }
+  .ocr-progress { margin-top: 6px; }
+  .ocr-progress .bar {
+    height: 6px;
+    background: var(--surface);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 6px;
+  }
+  .ocr-progress .bar-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--primary);
+    border-radius: 3px;
+    transition: width 0.25s ease;
+  }
+  .ocr-progress .bar-fill.indeterminate {
+    width: 40%;
+    animation: ocr-indeterminate 1s ease-in-out infinite alternate;
+  }
+  @keyframes ocr-indeterminate {
+    from { margin-left: 0%; }
+    to { margin-left: 60%; }
+  }
   /* 历史记录弹窗 */
   .hist-box { max-width: 520px; max-height: 85vh; display: flex; flex-direction: column; }
   .hist-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
@@ -432,6 +455,9 @@
       <div class="ocr-actions">
         <button onclick="runOcr()">识别文字</button>
         <button class="cancel" onclick="cancelOcr()">取消</button>
+      </div>
+      <div class="ocr-progress" id="ocrProgress" style="display:none">
+        <div class="bar"><div class="bar-fill" id="ocrProgressFill"></div></div>
       </div>
       <div class="status" id="ocrStatus"></div>
     </div>
@@ -849,11 +875,22 @@ function cancelOcr() {
 async function runOcr() {
   if (!_ocrFile) return;
   const status = document.getElementById("ocrStatus");
-  status.textContent = "⏳ 正在准备识别引擎（首次需下载中文语言包，已在后台预下载，稍候）...";
+  status.textContent = "⏳ 正在准备识别引擎...";
+  showOcrProgress(-1);
   try {
-    const text = await recognizeImage(_ocrFile, (p) => {
-      status.textContent = `⏳ 识别中 ${p}%...`;
+    const text = await recognizeImage(_ocrFile, (info) => {
+      const st = info && info.status;
+      const p = (info && info.progress != null) ? info.progress : -1;
+      const labelMap = {
+        "loading tesseract core": "正在加载识别引擎核心...",
+        "loading language traineddata": (p >= 0) ? `正在下载中文语言包 ${p}%...` : "正在下载中文语言包...",
+        "initializing tesseract": "正在初始化识别引擎...",
+        "recognizing text": (p >= 0) ? `正在识别文字 ${p}%...` : "正在识别文字...",
+      };
+      status.textContent = "⏳ " + (labelMap[st] || "处理中...");
+      showOcrProgress(p);
     });
+    hideOcrProgress();
     if (!text) {
       status.textContent = "⚠️ 未识别到文字，请换一张更清晰的图片试试";
       return;
@@ -863,8 +900,29 @@ async function runOcr() {
     document.getElementById("ocrPreview").style.display = "none";
     _ocrFile = null;
   } catch (e) {
+    hideOcrProgress();
     status.textContent = `❌ 识别失败：${e.message}`;
   }
+}
+
+// OCR 进度条：p 为 0-100 百分比；<0 或无值 → 不定进度动画
+function showOcrProgress(p) {
+  const wrap = document.getElementById("ocrProgress");
+  const fill = document.getElementById("ocrProgressFill");
+  wrap.style.display = "block";
+  fill.classList.remove("indeterminate");
+  if (p == null || p < 0) {
+    fill.classList.add("indeterminate");
+  } else {
+    fill.style.width = Math.min(100, Math.max(0, p)) + "%";
+  }
+}
+function hideOcrProgress() {
+  const wrap = document.getElementById("ocrProgress");
+  const fill = document.getElementById("ocrProgressFill");
+  wrap.style.display = "none";
+  fill.classList.remove("indeterminate");
+  fill.style.width = "0%";
 }
 
 // ── 风险点法律依据与建议补充查询 ─────────────
